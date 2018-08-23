@@ -1,0 +1,127 @@
+import React from 'react';
+import PropTypes from 'prop-types';
+import {
+  Switch,
+  Route,
+  routerRedux,
+} from 'dva/router';
+import dynamic from 'dva/dynamic';
+
+const { ConnectedRouter } = routerRedux;
+
+// 路由表
+// const routes = [
+//   {
+//     path: '/',
+//     component: () => import('./routes/App'),
+//   },
+// ];
+
+function RouteWithLayout({
+  layout,
+  component,
+  ...rest
+}) {
+  return (<Route {...rest} render={(props) => React.createElement(layout, { ...props, noFooter: rest.noFooter, noHeader: rest.noHeader }, React.createElement(component, props))} />);
+}
+
+const RouterWrapper = ({ history, app }) => {
+
+  const App = dynamic({
+    app,
+    component: () => import('./components/App'),
+  });
+
+  const Async = dynamic({
+    app,
+    models: () => [
+      import('./models/async'),
+    ],
+    component: () => import('./routes/Async'),
+  });
+
+  const PageForbidden = dynamic({
+    app,
+    component: () => import('./components/PageForbidden'),
+  });
+
+  const PageServerError = dynamic({
+    app,
+    component: () => import('./components/PageServerError'),
+  });
+
+  const PageNetworkError = dynamic({
+    app,
+    component: () => import('./components/PageNetworkError'),
+  });
+
+  const PageNotFound = dynamic({
+    app,
+    component: () => import('./components/PageNotFound'),
+  });
+
+  const PublicLayout = dynamic({
+    app,
+    component: () => import('./components/PublicLayout')
+  });
+
+  const GameList = dynamic({
+    app,
+    component: () => import('./components/GameList')
+  });
+  const GameDetail = dynamic({
+    app,
+    component: () => import('./components/GameDetail')
+  });
+
+  const GameOrder = dynamic({
+    app,
+    component: () => import('./components/GameOrder')
+  });
+
+  const HelpList = dynamic({
+    app,
+    component: () => import('./components/HelpList')
+  });
+  return (
+    <ConnectedRouter history={history}>
+      <Switch>
+        {/* {
+           routes.map( ({path, ...dynamics}, key) => (
+             <Route
+               key={key}
+               exact
+               path={path}
+               component={dynamic({
+                 app,
+                 ...dynamics
+               })} />
+           ))
+         } */}
+        <RouteWithLayout exact path="/gameDetail" layout={PublicLayout} component={GameDetail} />
+        <RouteWithLayout exact path="/gameOrder" layout={PublicLayout} component={GameOrder} />
+        <RouteWithLayout exact path="/helpList" layout={PublicLayout} component={HelpList} />
+        <Route exact path="/async" component={Async} />
+        {/* 403 */}
+        <Route exact path="/403" component={PageForbidden} />
+        {/* 500 */}
+        <Route exact path="/500" component={PageServerError} />
+        {/* 网络错误 */}
+        <Route exact path="/error" component={PageNetworkError} />
+        <RouteWithLayout path="/" layout={PublicLayout} component={GameList} />
+        {/* 404 */}
+        <Route component={PageNotFound} />
+        
+      </Switch>
+    </ConnectedRouter>
+  );
+};
+
+RouterWrapper.propTypes = {
+  history: PropTypes.object,
+  app: PropTypes.object,
+};
+
+RouterWrapper.defaultProps = {};
+
+export default RouterWrapper;
